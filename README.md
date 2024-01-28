@@ -11,11 +11,20 @@ Which contains the following AI models:
 ## 1. Wake Word Detection
 The Wake Word Detection module implements a Binary Classification Model in order to turn JingasAI on via voice prompt of the keyword "Jingas". Inside the model, A Recurrent Neural Network (RNN) is implemented to continuously hear audio and detect the keyword (1) inside background noise (0).
 
+### Datasets
 For the background noise, the model will be trained with sounds recorded in my own apartment for an afternoon, and also the Mozilla Common Voice Dataset, which is an open source, multi-language dataset of voices that anyone can use to train speech-enabled applications. I'll be training the model with Portuguese voices. The dataset can be accessed via this link: https://commonvoice.mozilla.org/en/datasets
 
 For the Keyword Detection, it will be trained with my own voice prompts. I've recorded myself saying "Jingas" 100 times.
 
-Data Augmentation techniques are used for expanding all datasets.
+### The Model
+The RNN implements a Long Short Term Memory Model (LSTM) in each of its cells. The LSTM Model used is encoded in the PyTorch Library, and is contained in the **model.py** file. It implements a normalization layer, 2 hidden layers and a linear classifier in the final layer. It also uses dropout in order to prevent overfitting.
+
+### Data Processing
+Data Augmentation techniques are used for expanding all datasets. Not only is the keyword data copied multiple times to compensate for the small set, but also all keyword audio waves are converted into Mel-Frequency Cepstral Coefficients (MFCC) spectrogram, That way we can process the audio data as "images", and apply SpecAugment. SpecAugment cuts part of our spectrograms to generate new data. Not only it makes our datasets bigger but it also helps the Neural Network to learn making better decisions with less audio information. This is contained in the **dataset.py** file 
+
+### Training
+For training the model the optimizer used is AdamW Algorithm. A Learning Rate Scheduler is also used for avoiding the model to stop learning in a local minimum. The Error function used for Backpropagation in Gradient Descent is a Binary Cross Entropy Cost Function. The training algorithm can be found in the **train.py** file
+
 ## 2. Speech Recognition
 ## 3. Natural Language Processing
 ## 4. Speech Synthesis
