@@ -13,7 +13,10 @@ The Wake Word Detection module implements a Binary Classification Model in order
 
 ### Datasets
 For the background noise, the model will be trained with sounds recorded in my own apartment for an afternoon, and also the Mozilla Common Voice Dataset, Multilingual LibriSpeech (MLS) and Multilingual TEDx, which are open source, multi-language datasets of voices that anyone can use to train speech-enabled applications. I'll be training the model with voices in Portuguese. 
-The datasets can be accessed via this link: https://commonvoice.mozilla.org/en/datasets
+The datasets can be accessed via the links: 
+- https://commonvoice.mozilla.org/en/datasets
+- https://www.openslr.org/94/
+- https://www.openslr.org/100/
 
 For the Keyword Detection, it will be trained with my own voice prompts. I've recorded myself saying "Jingas" 100 times.
 
