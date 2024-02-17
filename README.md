@@ -27,6 +27,7 @@ Data Augmentation techniques are used for expanding all datasets. Not only is th
 ### Training
 For training the model the optimizer used is AdamW Algorithm. A Learning Rate Scheduler is also used for avoiding the model to stop learning in a local minimum. The Error function used for Backpropagation in Gradient Descent is a Binary Cross Entropy Cost Function. The training algorithm can be found in the **train.py** file
 
+### Prototype
 There were made several "Utils" scripts for splitting, recording and creating the jsons for the data. The repo now contains the trained model which is capable of handling most cases except for the false positives "Pingas" and microphone issues.
 ![image](https://github.com/vhpadula/JingasAI/assets/64943143/55a46e0c-681d-45eb-8b4b-968a09e084de)
 
