@@ -9,7 +9,7 @@ The JingasAI has the following design:
 
 Which contains the following AI models:
 ## 1. Wake Word Detection
-The Wake Word Detection module implements a Binary Classification Model in order to turn JingasAI on via voice prompt of the keyword "Jingas". Inside the model, A Recurrent Neural Network (RNN) is implemented to continuously hear audio and detect the keyword (1) inside background noise (0).
+The Wake Word Detection module implements a Binary Classification Model in order to turn JingasAI on via voice prompt of the keyword "Jingas". Inside the model, A Recurrent Neural Network (RNN) is implemented to continuously hear audio and detect the keyword (1) inside background noise (0) and signal to the controller to start the speech recognition 
 
 ### Datasets
 For the background noise, the model will be trained with sounds recorded in my own apartment for an afternoon, and also the Mozilla Common Voice Dataset, which is an open source, multi-language dataset of voices that anyone can use to train speech-enabled applications. I'll be training the model with voices in Portuguese. 
