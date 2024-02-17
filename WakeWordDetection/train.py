@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.utils.data as data
 import torch.optim as optim
 from dataset import WakeWordData, collate_fn
-from model import LSTMWakeWord
+from model import LSTMWakeWordDetector
 from sklearn.metrics import classification_report
 from tabulate import tabulate
 
@@ -38,6 +38,8 @@ def test(test_loader, model, device, epoch):
         for idx, (mfcc, label) in enumerate(test_loader):
             mfcc, label = mfcc.to(device), label.to(device)
             output = model(mfcc)
+            if output is None: 
+                continue 
             pred = torch.sigmoid(output)
             acc = binary_accuracy(pred, label)
             preds += torch.flatten(torch.round(pred)).cpu()
@@ -82,6 +84,7 @@ def train(train_loader, model, optimizer, loss_fn, device, epoch):
 
 def main(args):
     use_cuda = not args.no_cuda and torch.cuda.is_available()
+    print("Use CUDA:" + str(use_cuda))
     torch.manual_seed(1)
     device = torch.device('cuda' if use_cuda else 'cpu')
 
@@ -104,7 +107,7 @@ def main(args):
         "num_classes": 1, "feature_size": 40, "hidden_size": args.hidden_size,
         "num_layers": 1, "dropout" :0.1, "bidirectional": False
     }
-    model = LSTMWakeWord(**model_params, device=device)
+    model = LSTMWakeWordDetector(**model_params, device=device)
     model = model.to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
     loss_fn = nn.BCEWithLogitsLoss()
@@ -160,15 +163,15 @@ if __name__ == "__main__":
     parser.add_argument('--sample_rate', type=int, default=8000, help='sample_rate for data')
     parser.add_argument('--epochs', type=int, default=100, help='epoch size')
     parser.add_argument('--batch_size', type=int, default=32, help='size of batch')
-    parser.add_argument('--eval_batch_size', type=int, default=32, help='size of batch')
-    parser.add_argument('--lr', type=float, default=1e-4, help='learning rate')
+    parser.add_argument('--eval_batch_size', type=int, default=1, help='size of batch')
+    parser.add_argument('--lr', type=float, default=0.1, help='learning rate')
     parser.add_argument('--model_name', type=str, default="wakeword", required=False, help='name of model to save')
     parser.add_argument('--save_checkpoint_path', type=str, default=None, help='Path to save the best checkpoint')
     parser.add_argument('--train_data_json', type=str, default=None, required=True, help='path to train data json file')
     parser.add_argument('--test_data_json', type=str, default=None, required=True, help='path to test data json file')
     parser.add_argument('--no_cuda', action='store_true', default=False, help='disables CUDA training')
-    parser.add_argument('--num_workers', type=int, default=1, help='number of data loading workers')
-    parser.add_argument('--hidden_size', type=int, default=128, help='lstm hidden size')
+    parser.add_argument('--num_workers', type=int, default=8, help='number of data loading workers')
+    parser.add_argument('--hidden_size', type=int, default=32, help='lstm hidden size')
 
     args = parser.parse_args()
 

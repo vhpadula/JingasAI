@@ -21,6 +21,9 @@ class LSTMWakeWordDetector(nn.Module):
     
     def forward(self, x):
         # x.shape => seq_len, batch, feature
+        if x.size(0) == 0:  # Check if the sequence length is 0
+            return None
+
         x = self.layernorm(x)
         hidden = self._init_hidden(x.size()[1])
         out, (hn, cn) = self.lstm(x, hidden)

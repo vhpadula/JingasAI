@@ -5,18 +5,19 @@ import pandas as pd
 from sonopy import power_spec, mel_spec, mfcc_spec, filterbanks
 
 
-class MFCC (nn.module):
-
-    def __init__(self, sample_rate, ftt_size=400, window_stride= (400,200), num_filt=40, num_coeffs=40):
+class MFCC(nn.Module):
+    def __init__(self, sample_rate, ftt_size=400, window_stride=(400,200), num_filt=40, num_coeffs=40):
         super(MFCC, self).__init__()
         self.sample_rate = sample_rate
         self.ftt_size = ftt_size
         self.window_stride = window_stride
         self.num_filt = num_filt
         self.num_coeffs = num_coeffs
-        self.mfcc = lambda x: mfcc_spec(x, self.sample_rate, self.window_stride, self.ftt_size, self.num_filt, self.num_coeffs)
 
-    def forward (self, x):
+    def mfcc(self, x):
+        return mfcc_spec(x, self.sample_rate, self.window_stride, self.ftt_size, self.num_filt, self.num_coeffs)
+
+    def forward(self, x):
         return torch.Tensor(self.mfcc(x.squeeze(0).numpy())).transpose(0,1).unsqueeze(0)
         
 def get_featurizer(sample_rate):
@@ -29,12 +30,12 @@ class RandomCut(nn.Module):
         self.max_cut = max_cut
 
     def forward(self, x):
-        side = torch.radint(0,1,(1,))
-        cut = torch.radint(1, self.max_cut, (1,))
+        side = torch.randint(0, 1, (1,))
+        cut = torch.randint(1, self.max_cut, (1,))
         if side == 0:
-            return x[:-cut, :, :]
+            return x[:-cut,:,:]
         elif side == 1:
-            return x[cut:, :, :]
+            return x[cut:,:,:]
         
 
 class SpecAugment(nn.Module):
@@ -75,40 +76,39 @@ class SpecAugment(nn.Module):
         else:
             return self.specaug2(x)
         
-    class WakeWordData(torch.utils.data.Dataset):
+class WakeWordData(torch.utils.data.Dataset):
 
-        def __init__(self, data_json, sample_rate=8000, valid=False):
-            self.sr = sample_rate
-            self.data= pd.read_json(data_json, lines=True)
-            if valid:
-                self.audio_transform = get_featurizer(sample_rate)
+    def __init__(self, data_json, sample_rate=8000, valid=False):
+        self.sr = sample_rate
+        self.data= pd.read_json(data_json, lines=True)
+        if valid:
+            self.audio_transform = get_featurizer(sample_rate)
 
-            else:
-                self.audio_transform = nn.Sequential(
-                    get_featurizer(sample_rate),
-                    SpecAugment(rate=0.5)
-                )
+        else:
+            self.audio_transform = nn.Sequential(
+                get_featurizer(sample_rate),
+                SpecAugment(rate=0.5)
+            )
 
-        def __len__(self):
-            return len(self.data)
-        
-        def __getitem__(self, idx):
-            if torch.is_tensor(idx):
-                idx = idx.item()
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.item()
 
-            try:
-                file_path = self.data.key.iloc[idx]
-                waveform, sr = torchaudio.load(file_path, normalization=False)
-                if sr > self.sr:
-                    waveform = torchaudio.transforms.Resample(sr, self.sr)(waveform)
-                mfcc = self.audio_transform(waveform)
-                label = self.data.label.iloc[idx]
+        try:    
+            file_path = self.data.key.iloc[idx]
+            waveform, sr = torchaudio.load(file_path)
+            if sr > self.sr:
+                waveform = torchaudio.transforms.Resample(sr, self.sr)(waveform)
+            mfcc = self.audio_transform(waveform)
+            label = self.data.label.iloc[idx]
 
-            except Exception as e:
-                print(str(e), file_path)
-                return self.__getitem__(torch.randint(0, len(self), (1,)))
-            
-            return mfcc, label
+        except Exception as e:
+            return self.__getitem__(torch.randint(0, len(self), (1,)))
+
+        return mfcc, label
         
 
 rand_cut = RandomCut(max_cut=10)
@@ -125,5 +125,6 @@ def collate_fn(data):
     mfccs = mfccs.transpose(0, 1) # seq_len, batch, feature
     mfccs = rand_cut(mfccs)
     labels = torch.Tensor(labels)
+    
     return mfccs, labels
                 

@@ -16,12 +16,12 @@ def main(args):
     data = []
     for z in zeros:
         data.append({
-            "key": os.path.join(args.zero_label_dir, z),
+            "key": os.path.join(args.zero_label_dir, z).replace("\\", "/"),
             "label": 0
         })
     for o in ones:
         data.append({
-            "key": os.path.join(args.one_label_dir, o),
+            "key": os.path.join(args.one_label_dir, o).replace("\\", "/"),
             "label": 1
         })
     random.shuffle(data)
